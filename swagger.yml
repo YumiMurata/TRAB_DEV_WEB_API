@@ -1,0 +1,1019 @@
+openapi: 3.0.3
+
+info:
+  title: Event Management API
+  description: API for managing events, editions, and activities
+  version: 1.0.0
+
+security:
+  - basicAuth: []
+
+servers:
+  - description: Example server
+    url: https://example.com/api/v1
+    
+tags:
+  - name: admin
+    description: Endpoints for admins
+  - name: organizer
+    description: Endpoints for event organizers
+  - name: user
+    description: Endpoints for existing users
+  - name: public
+    description: Endpoints without authentication
+
+#####################################################################
+# ENDPOINTS
+#####################################################################
+
+paths:
+  /events:
+    get:
+      tags:
+        - admin
+        - organizer
+        - user
+      summary: View all registered events
+      operationId: listEvents
+      responses:
+        "200":
+          description: Registered events showed succesfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Event'
+        "401":
+          description: User must pass valid credentials to perform this action
+        "403":
+          description: User not authorized to perform this action
+    post:
+      tags:
+        - admin
+      summary: Register an event
+      operationId: registerEvent
+      requestBody:
+        description: Event data to be registered
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EventWithoutId"
+      responses:
+        "201":
+          description: Event registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+        "400":
+          description: Invalid data provided
+        "401":
+          description: User must pass valid credentials to perform this action
+        "403":
+          description: User not authorized to perform this action
+
+  /events/{eventId}:
+    get:
+      tags:
+        - admin
+        - organizer
+        - user
+      summary: View a registered event
+      operationId: viewEvent
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          description: ID of the event to be viewed
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: Registered event showed succesfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+        "401":
+          description: User must pass valid credentials to perform this action
+        "403":
+          description: User not authorized to perform this action
+        "404":
+          description: Event not found
+    delete:
+      tags:
+        - admin
+      summary: Remove a registered event
+      operationId: removeEvent
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          description: ID of the event to be deleted
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "204":
+          description: Event deleted successfully
+        "401":
+          description: User must pass valid credentials to perform this action
+        "403":
+          description: User not authorized to perform this action
+        "404":
+          description: Event not found
+    put:
+      tags:
+        - admin
+      summary: Edit a registered event
+      operationId: editEvent
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          description: ID of the event to be edited
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        description: Event data, edited
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EventWithoutId"
+      responses:
+        "200":
+          description: Event edited successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+        "400":
+          description: Invalid data provided
+        "401":
+          description: User must pass valid credentials to perform this action
+        "403":
+          description: User not authorized to perform this action
+        "404":
+          description: Event not found
+
+  /events/{eventId}/editions:
+    get:
+      tags:
+        - admin
+        - organizer
+        - user
+      summary: View all editions of an event
+      operationId: viewEditions
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          description: ID of the event to be viewed
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: Registered event showed succesfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Edition'
+        "401":
+          description: User must pass valid credentials to perform this action
+        "403":
+          description: User not authorized to perform this action
+        "404":
+          description: Event not found
+    post:
+      tags:
+        - admin
+      summary: Register an edition for an event
+      operationId: registerEdition
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          description: ID of the event to be used
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        description: Edition data to be registered
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EditionWithoutId"
+      responses:
+        "201":
+          description: Edition registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Edition'
+        "400":
+          description: Invalid data provided
+        "401":
+          description: User must pass valid credentials to perform this action
+        "403":
+          description: User not authorized to perform this action
+        "404":
+          description: Event not found
+
+  /events/{eventId}/editions/{editionId}:
+    get:
+      tags:
+        - admin
+        - organizer
+        - user
+      summary: View an edition of an event
+      operationId: viewEdition
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          description: ID of the event
+          schema:
+            type: integer
+            format: int64
+        - name: editionId
+          in: path
+          required: true
+          description: ID of the edition to be viewed
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Event edition showed succesfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Edition"
+        "401":
+          description: User must pass valid credentials to perform this action
+        "403":
+          description: User not authorized to perform this action
+        "404":
+          description: Event edition not found
+    delete:
+      tags:
+        - admin
+      summary: Remove an edition of an event
+      operationId: removeEdition
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          description: ID of the event
+          schema:
+            type: integer
+            format: int64
+        - name: editionId
+          in: path
+          required: true
+          description: ID of the edition to be deleted
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Event edition deleted successfully
+        "401":
+          description: User must pass valid credentials to perform this action
+        "403":
+          description: User not authorized to perform this action
+        "404":
+          description: Event edition not found
+    put:
+      tags:
+        - admin
+        - organizer
+      summary: Edit an edition of an event
+      operationId: editEdition
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          description: ID of the event to be edited
+          schema:
+            type: integer
+            format: int64
+        - name: editionId
+          in: path
+          required: true
+          description: ID of the edition to be edited
+          schema:
+            type: string
+      requestBody:
+        description: Updated edition data
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EditionWithoutId"
+      responses:
+        "200":
+          description: Event edition edited successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Edition'
+        "400":
+          description: Invalid data provided
+        "401":
+          description: User must pass valid credentials to perform this action
+        "403":
+          description: User not authorized to perform this action
+        "404":
+          description: Event edition not found
+      
+  /events/{eventId}/editions/{editionId}/spaces:
+    get:
+      tags:
+        - organizer
+      summary: View all registered spaces
+      operationId: viewSpaces
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          description: ID of the event
+          schema:
+            type: integer
+            format: int64
+        - name: editionId
+          in: path
+          required: true
+          description: ID of the edition
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Registered spaces showed succesfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Space'
+        "401":
+          description: User must pass valid credentials to perform this action
+        "403":
+          description: User not authorized to perform this action
+        "404":
+          description: Event edition not found
+    post:
+      tags:
+        - organizer
+      summary: Register a space
+      operationId: registerSpace
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          description: ID of the event
+          schema:
+            type: integer
+            format: int64
+        - name: editionId
+          in: path
+          required: true
+          description: ID of the edition
+          schema:
+            type: string
+      requestBody:
+        description: Space data to be registered
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SpaceWithoutId"
+      responses:
+        "201":
+          description: Space registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Space'
+        "400":
+          description: Invalid data provided
+        "401":
+          description: User must pass valid credentials to perform this action
+        "403":
+          description: User not authorized to perform this action
+        "404":
+          description: Event edition not found
+
+  /events/{eventId}/editions/{editionId}/spaces/{spaceId}:
+    get:
+      tags:
+        - organizer
+      summary: View a registered space
+      operationId: viewSpace
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          description: ID of the event
+          schema:
+            type: integer
+            format: int64
+        - name: editionId
+          in: path
+          required: true
+          description: ID of the edition
+          schema:
+            type: string
+        - name: spaceId
+          in: path
+          required: true
+          description: ID of the space to be viewed
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: Registered space showed succesfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Space"
+        "401":
+          description: User must pass valid credentials to perform this action
+        "403":
+          description: User not authorized to perform this action
+        "404":
+          description: Space not found
+    delete:
+      tags:
+        - organizer
+      summary: Remove a registered space
+      operationId: removeSpace
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          description: ID of the event
+          schema:
+            type: integer
+            format: int64
+        - name: editionId
+          in: path
+          required: true
+          description: ID of the edition
+          schema:
+            type: string
+        - name: spaceId
+          in: path
+          required: true
+          description: ID of the space to be deleted
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "204":
+          description: Space deleted successfully
+        "401":
+          description: User must pass valid credentials to perform this action
+        "403":
+          description: User not authorized to perform this action
+        "404":
+          description: Space not found
+    put:
+      tags:
+        - organizer
+      summary: Edit a registered space
+      operationId: editSpace
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          description: ID of the event
+          schema:
+            type: integer
+            format: int64
+        - name: editionId
+          in: path
+          required: true
+          description: ID of the edition
+          schema:
+            type: string
+        - name: spaceId
+          in: path
+          required: true
+          description: ID of the space to be edited
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        description: Space data, edited
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SpaceWithoutId"
+      responses:
+        "200":
+          description: Space edited successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Space'
+        "400":
+          description: Invalid data provided
+        "401":
+          description: User must pass valid credentials to perform this action
+        "403":
+          description: User not authorized to perform this action
+        "404":
+          description: Space not found
+
+  /events/{eventId}/editions/{editionId}/activities:
+    get:
+      tags:
+        - organizer
+        - user
+      summary: View all registered activities
+      operationId: viewActivities
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          description: ID of the event
+          schema:
+            type: integer
+            format: int64
+        - name: editionId
+          in: path
+          required: true
+          description: ID of the edition
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Registered activities showed succesfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Activity'
+        "401":
+          description: User must pass valid credentials to perform this action
+        "403":
+          description: User not authorized to perform this action
+        "404":
+          description: Event edition not found
+    post:
+      tags:
+        - organizer
+      summary: Register an activity
+      operationId: registerActivity
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          description: ID of the event
+          schema:
+            type: integer
+            format: int64
+        - name: editionId
+          in: path
+          required: true
+          description: ID of the edition
+          schema:
+            type: string
+      requestBody:
+        description: Activity data to be registered
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ActivityWithoutId"
+      responses:
+        "201":
+          description: Activity registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Activity'
+        "400":
+          description: Invalid data provided
+        "401":
+          description: User must pass valid credentials to perform this action
+        "403":
+          description: User not authorized to perform this action
+        "404":
+          description: Event edition not found
+
+  /events/{eventId}/editions/{editionId}/activities/{activityId}:
+    get:
+      tags:
+        - organizer
+        - user
+      summary: View a registered activity
+      operationId: viewActivity
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          description: ID of the event
+          schema:
+            type: integer
+            format: int64
+        - name: editionId
+          in: path
+          required: true
+          description: ID of the edition
+          schema:
+            type: string
+        - name: activityId
+          in: path
+          required: true
+          description: ID of the activity to be viewed
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "200":
+          description: Registered activity showed succesfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Activity"
+        "401":
+          description: User must pass valid credentials to perform this action
+        "403":
+          description: User not authorized to perform this action
+        "404":
+          description: Activity not found
+    delete:
+      tags:
+        - organizer
+      summary: Remove a registered activity
+      operationId: removeActivity
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          description: ID of the event
+          schema:
+            type: integer
+            format: int64
+        - name: editionId
+          in: path
+          required: true
+          description: ID of the edition
+          schema:
+            type: string
+        - name: activityId
+          in: path
+          required: true
+          description: ID of the activity to be deleted
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "204":
+          description: Activity deleted successfully
+        "401":
+          description: User must pass valid credentials to perform this action
+        "403":
+          description: User not authorized to perform this action
+        "404":
+          description: Activity not found
+    put:
+      tags:
+        - organizer
+      summary: Edit a registered activity
+      operationId: editActivity
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          description: ID of the event
+          schema:
+            type: integer
+            format: int64
+        - name: editionId
+          in: path
+          required: true
+          description: ID of the edition
+          schema:
+            type: string
+        - name: activityId
+          in: path
+          required: true
+          description: ID of the activity to be edited
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        description: Activity data, edited
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ActivityWithoutId"
+      responses:
+        "200":
+          description: Activity edited successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Activity'
+        "400":
+          description: Invalid data provided
+        "401":
+          description: User must pass valid credentials to perform this action
+        "403":
+          description: User not authorized to perform this action
+        "404":
+          description: Activity not found
+
+  /users:
+    post:
+      tags:
+        - public
+      summary: Register an user
+      operationId: registerUser
+      requestBody:
+        description: User data to be registered
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserWithoutId"
+      responses:
+        "201":
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        "400":
+          description: Invalid data provided
+
+  /events/{eventId}/editions/{editionId}/activities/{activityId}/star:
+    post:
+      tags:
+        - user
+      summary: Star an activity
+      operationId: favoriteActivity
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          description: ID of the event
+          schema:
+            type: integer
+            format: int64
+        - name: editionId
+          in: path
+          required: true
+          description: ID of the edition
+          schema:
+            type: string
+        - name: activityId
+          in: path
+          required: true
+          description: ID of the activity to be starred
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        description: Empty request body for starring an activity
+        required: false
+        content:
+          application/json: {}
+      responses:
+        "201":
+          description: Activity starred successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Activity'
+        "400":
+          description: Invalid data provided
+        "401":
+          description: User must pass valid credentials to perform this action
+        "403":
+          description: User not authorized to perform this action
+        "404":
+          description: Activity not found
+    delete:
+      tags:
+        - user
+      summary: Unstar an activity
+      operationId: unstarActivity
+      parameters:
+        - name: eventId
+          in: path
+          required: true
+          description: ID of the event
+          schema:
+            type: integer
+            format: int64
+        - name: editionId
+          in: path
+          required: true
+          description: ID of the edition
+          schema:
+            type: string
+        - name: activityId
+          in: path
+          required: true
+          description: ID of the activity to be starred
+          schema:
+            type: integer
+            format: int64
+      responses:
+        "204":
+          description: Activity unstarred successfully
+        "401":
+          description: User must pass valid credentials to perform this action
+        "403":
+          description: User not authorized to perform this action
+        "404":
+          description: Activity not found
+
+#####################################################################
+# SCHEMAS
+#####################################################################
+
+components:
+  schemas:
+    EventWithoutId:
+      type: object
+      properties:
+        name:
+          type: string
+        abbreviation:
+          type: string
+        description:
+          type: string
+      required:
+        - name
+        - abbreviation
+        - description
+
+    Event:
+      allOf:
+        - $ref: '#/components/schemas/EventWithoutId'
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+      required:
+        - id
+
+    EditionWithoutId:
+      type: object
+      properties:
+        number:
+          type: integer
+          format: int64
+        year:
+          type: integer
+          format: int64
+        start_date:
+          type: string
+          format: date
+        end_date:
+          type: string
+          format: date
+        city:
+          type: string
+        organizer_id:
+          type: string # Organizers won't be able to edit this.
+      required:
+        - number
+        - year
+        - start_date
+        - end_date
+        - city
+        - organizer
+
+    Edition:
+      allOf:
+        - $ref: '#/components/schemas/EditionWithoutId'
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+      required:
+        - id
+
+    UserWithoutId:
+      type: object
+      properties:
+        login:
+          type: string
+        email:
+          type: string
+        name:
+          type: string
+        affiliation:
+          type: string
+      required:
+        - login
+        - email
+        - name
+        - affiliation
+
+    User:
+      allOf:
+        - $ref: '#/components/schemas/UserWithoutId'
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+      required:
+        - id
+        
+    SpaceWithoutId:
+      type: object
+      properties:
+        name:
+          type: string
+        location:
+          type: string
+        capacity:
+          type: integer
+        resources:
+          type: string
+      required:
+        - name
+        - location
+        - capacity
+        - resources
+
+    Space:
+      allOf:
+        - $ref: '#/components/schemas/SpaceWithoutId'
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+      required:
+        - id
+        
+    ActivityWithoutId:
+      type: object
+      properties:
+        name:
+          type: string
+        type:
+          type: string
+        description:
+          type: string
+        date:
+          type: string
+          format: date
+        start_time:
+          type: string
+          format: time
+        end_time:
+          type: string
+          format: time
+        location:
+          $ref: '#/components/schemas/Space'
+      required:
+        - name
+        - type
+        - description
+        - date
+        - start_time
+        - end_time
+        - location
+
+    Activity:
+      allOf:
+        - $ref: '#/components/schemas/ActivityWithoutId'
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+      required:
+        - id
+
+#####################################################################
+# SECURITY
+#####################################################################
+
+  securitySchemes:
+    basicAuth:
+      type: http
+      scheme: basic
